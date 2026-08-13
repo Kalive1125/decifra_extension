@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decifra</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      width: 320px;
+      background: #f8f7ff;
+      color: #1a1a2e;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #5c4ae4, #7b68ee);
+      padding: 16px 18px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .header-text h1 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+
+    .header-text p {
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+    }
+
+    /* ── TOGGLE GERAL ── */
+    .master-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      margin: 12px 12px 4px;
+      border-radius: 10px;
+      padding: 10px 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .master-toggle span {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    /* ── SEÇÕES ── */
+    .section {
+      background: #fff;
+      margin: 6px 12px;
+      border-radius: 10px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    /* ── CONTROLES ── */
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .control-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .control-label {
+      font-size: 13px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-label .icon {
+      font-size: 15px;
+      width: 20px;
+      text-align: center;
+    }
+
+    /* ── TOGGLE SWITCH ── */
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #ccc;
+      border-radius: 22px;
+      transition: .25s;
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      bottom: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: .25s;
+    }
+
+    input:checked + .slider {
+      background: #5c4ae4;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(18px);
+    }
+
+    /* ── RANGE SLIDER ── */
+    .range-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    .range-wrap input[type=range] {
+      flex: 1;
+      accent-color: #5c4ae4;
+      height: 4px;
+      cursor: pointer;
+    }
+
+    .range-val {
+      font-size: 12px;
+      font-weight: 600;
+      color: #5c4ae4;
+      min-width: 34px;
+      text-align: right;
+    }
+
+    .full-control {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .full-control .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    /* ── BOTÕES DE CONTRASTE ── */
+    .contrast-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .contrast-btn {
+      border: 2px solid transparent;
+      border-radius: 7px;
+      padding: 7px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color .2s, transform .1s;
+    }
+
+    .contrast-btn:hover {
+      transform: scale(1.03);
+    }
+
+    .contrast-btn.active {
+      border-color: #5c4ae4;
+    }
+
+    .cb-normal   { background: #fff; color: #222; }
+    .cb-dark     { background: #1a1a2e; color: #fff; }
+    .cb-sepia    { background: #f4e4c1; color: #5c3d11; }
+    .cb-high     { background: #000; color: #ff0; }
+    .cb-dyslexia { background: #fef9e7; color: #1a1a2e; }
+
+    /* ── RÉGUA ── */
+    .ruler-info {
+      font-size: 11px;
+      color: #888;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px 12px;
+      margin: 4px 12px 0;
+    }
+
+    .btn-reset {
+      font-size: 11px;
+      color: #888;
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: color .2s, border-color .2s;
+    }
+
+    .btn-reset:hover {
+      color: #5c4ae4;
+      border-color: #5c4ae4;
+    }
+
+    .wcag-badge {
+      font-size: 10px;
+      color: #aaa;
+      letter-spacing: 0.3px;
+    }
+
+    /* Estado desativado */
+    body.disabled .section,
+    body.disabled .contrast-grid {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">🔍</div>
+    <div class="header-text">
+      <h1>Decifra</h1>
+      <p>Acessibilidade de leitura</p>
+    </div>
+  </div>
+
+  <!-- TOGGLE GERAL -->
+  <div class="master-toggle">
+    <span>Ativar Decifra nesta página</span>
+    <label class="toggle">
+      <input type="checkbox" id="masterToggle" />
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <!-- FONTE -->
+  <div class="section">
+    <div class="section-title">📝 Texto</div>
+
+    <div class="control-row full-control">
+      <div class="top-row">
+        <span class="control-label"><span class="icon">🔡</span> Tamanho da fonte</span>
+      </div>
+      <div class="range-wrap">
+        <input type="range" id="fontSize" min="80" max="180" step="5" value="100" />
+        <span class="range-val" id="fontSizeVal">100%</span>
+      </div>
+    </div>
+
+    <div class="control-row full-control">
+      <div class="top-row">
+        <span class="control-label"><span class="icon">↔️</span> Espaço entre letras</span>
+      </div>
+      <div class="range-wrap">
+        <input type="range" id="letterSpacing" min="0" max="8" step="0.5" value="0" />
+        <span class="range-val" id="letterSpacingVal">0px</span>
+      </div>
+    </div>
+
+    <div class="control-row full-control">
+      <div class="top-row">
+        <span class="control-label"><span class="icon">↕️</span> Altura da linha</span>
+      </div>
+      <div class="range-wrap">
+        <input type="range" id="lineHeight" min="1" max="3" step="0.1" value="1.5" />
+        <span class="range-val" id="lineHeightVal">1.5</span>
+      </div>
+    </div>
+
+    <div class="control-row">
+      <span class="control-label"><span class="icon">🔤</span> Fonte para dislexia</span>
+      <label class="toggle">
+        <input type="checkbox" id="dyslexiaFont" />
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- CONTRASTE -->
+  <div class="section">
+    <div class="section-title">🎨 Contraste de cores</div>
+    <div class="contrast-grid">
+      <button class="contrast-btn cb-normal active" data-theme="normal">Normal</button>
+      <button class="contrast-btn cb-dark"     data-theme="dark">Escuro</button>
+      <button class="contrast-btn cb-sepia"    data-theme="sepia">Sépia</button>
+      <button class="contrast-btn cb-high"     data-theme="high">Alto contraste</button>
+      <button class="contrast-btn cb-dyslexia" data-theme="dyslexia" style="grid-column:span 2">Dislexia</button>
+    </div>
+  </div>
+
+  <!-- FOCO & LEITURA -->
+  <div class="section">
+    <div class="section-title">🎯 Foco e leitura</div>
+
+    <div class="control-row">
+      <span class="control-label"><span class="icon">🧹</span> Simplificação visual</span>
+      <label class="toggle">
+        <input type="checkbox" id="simplify" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="control-row">
+      <span class="control-label"><span class="icon">📏</span> Régua de leitura</span>
+      <label class="toggle">
+        <input type="checkbox" id="ruler" />
+        <span class="slider"></span>
+      </label>
+    </div>
+    <p class="ruler-info">A régua segue o cursor do mouse e destaca a linha sendo lida.</p>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <button class="btn-reset" id="btnReset">↺ Redefinir tudo</button>
+    <span class="wcag-badge">WCAG 2.1 • ISO 9241-171</span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

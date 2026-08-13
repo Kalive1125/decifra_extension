@@ -1,0 +1,8 @@
+/* content.css — Decifra: estilos base injetados nas páginas */
+
+/* Garante que a régua e o overlay fiquem sempre no topo */
+#__decifra_ruler__ {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  pointer-events: none !important;
+}
