@@ -34,21 +34,6 @@
       bg: '#1a1a2e !important',
       color: '#e8e8ff !important',
       filter: 'invert(0)'
-    },
-    sepia: {
-      bg: '#f4e4c1 !important',
-      color: '#5c3d11 !important',
-      filter: 'sepia(20%)'
-    },
-    high: {
-      bg: '#000000 !important',
-      color: '#ffff00 !important',
-      filter: 'contrast(1.4)'
-    },
-    dyslexia: {
-      bg: '#fef9e7 !important',
-      color: '#1a1a2e !important',
-      filter: ''
     }
   };
 
@@ -64,11 +49,13 @@
     }
   }
 
+  const extApi = typeof browser !== 'undefined' ? browser : (typeof chrome !== 'undefined' ? chrome : null);
+
   // ── Aplica todas as configurações ─────────────────────
   function applySettings(s) {
     const el = getStyleEl();
 
-    if (!s || !s.enabled) {
+    if (!s) {
       el.textContent = '';
       removeRuler();
       removeOverlay();
@@ -77,23 +64,35 @@
 
     const theme = THEMES[s.theme] || THEMES.normal;
 
-    // Fonte dislexia
-    let fontFamily = 'inherit';
-    if (s.dyslexiaFont) {
-      ensureDyslexicFont();
-      fontFamily = '"OpenDyslexic", Arial, sans-serif';
+    // Regras de texto dinâmicas (apenas aplica o que estiver ativo)
+    let textRules = [];
+
+    if (s.fontSize && s.fontSize !== 'disabled') {
+      textRules.push(`font-size: ${s.fontSize}% !important;`);
     }
 
-    // CSS de texto e contraste
-    let css = `
-      html, body, p, span, div, li, td, th, h1, h2, h3, h4, h5, h6,
-      article, section, main, aside, header, footer, a, label, input, textarea {
-        font-size: ${s.fontSize}% !important;
-        letter-spacing: ${s.letterSpacing}px !important;
-        line-height: ${s.lineHeight} !important;
-        font-family: ${fontFamily} !important;
-      }
-    `;
+    if (s.letterSpacing && s.letterSpacing !== 'disabled') {
+      textRules.push(`letter-spacing: ${s.letterSpacing} !important;`);
+    }
+
+    if (s.lineHeight && s.lineHeight !== 'disabled') {
+      textRules.push(`line-height: ${s.lineHeight} !important;`);
+    }
+
+    if (s.dyslexiaFont) {
+      ensureDyslexicFont();
+      textRules.push(`font-family: "OpenDyslexic", Arial, sans-serif !important;`);
+    }
+
+    let css = '';
+    if (textRules.length > 0) {
+      css += `
+        html, body, p, span, div, li, td, th, h1, h2, h3, h4, h5, h6,
+        article, section, main, aside, header, footer, a, label, input, textarea {
+          ${textRules.join('\n          ')}
+        }
+      `;
+    }
 
     if (theme.bg) {
       css += `
@@ -109,6 +108,16 @@
         img, video, canvas, svg {
           background-color: transparent !important;
           filter: ${theme.filter || 'none'};
+        }
+      `;
+    }
+
+    // Ocultar imagens para evitar sobrecarga visual
+    if (s.hideImages) {
+      css += `
+        img, picture, video, canvas, figure, [style*="background-image"] {
+          opacity: 0 !important;
+          visibility: hidden !important;
         }
       `;
     }
@@ -170,7 +179,8 @@
 
   function onMouseMove(e) {
     if (!rulerEl) return;
-    const lineH = currentSettings ? currentSettings.lineHeight * 18 : 30;
+    const hasLineH = currentSettings && currentSettings.lineHeight && currentSettings.lineHeight !== 'disabled';
+    const lineH = hasLineH ? currentSettings.lineHeight * 18 : 30;
     const half = Math.max(lineH, 28) / 2;
     rulerEl.style.top = (e.clientY - half) + 'px';
     rulerEl.style.height = (half * 2) + 'px';
@@ -192,19 +202,37 @@
   }
 
   // ── Ouve mensagens do popup ───────────────────────────
-  browser.runtime.onMessage.addListener((msg) => {
-    if (msg.type === 'DECIFRA_UPDATE') {
-      currentSettings = msg.settings;
-      applySettings(msg.settings);
-    }
-  });
+  if (extApi && extApi.runtime && extApi.runtime.onMessage) {
+    extApi.runtime.onMessage.addListener((msg) => {
+      if (msg.type === 'DECIFRA_UPDATE') {
+        currentSettings = msg.settings;
+        applySettings(msg.settings);
+      }
+    });
+  }
 
   // ── Carrega configurações salvas ao abrir a página ────
-  browser.storage.local.get('decifraSettings').then(result => {
-    if (result.decifraSettings) {
-      currentSettings = result.decifraSettings;
-      applySettings(result.decifraSettings);
+  if (extApi && extApi.storage && extApi.storage.local) {
+    try {
+      const getRes = extApi.storage.local.get('decifraSettings');
+      if (getRes && typeof getRes.then === 'function') {
+        getRes.then(result => {
+          if (result && result.decifraSettings) {
+            currentSettings = result.decifraSettings;
+            applySettings(result.decifraSettings);
+          }
+        });
+      } else {
+        extApi.storage.local.get('decifraSettings', (result) => {
+          if (result && result.decifraSettings) {
+            currentSettings = result.decifraSettings;
+            applySettings(result.decifraSettings);
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Decifra storage access:', e);
     }
-  });
+  }
 
 })();
